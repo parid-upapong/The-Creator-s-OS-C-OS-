@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: creator-os-backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: creator-os-backend
+  template:
+    metadata:
+      labels:
+        app: creator-os-backend
+    spec:
+      containers:
+      - name: backend
+        image: ECR_REGISTRY/creator-os-backend:IMAGE_TAG
+        ports:
+        - containerPort: 8000
+        resources:
+          limits:
+            cpu: "2"
+            memory: "4Gi"
+            nvidia.com/gpu: 1 # Required for AI model inference
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: creator-os-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: creator-os-frontend
+  template:
+    metadata:
+      labels:
+        app: creator-os-frontend
+    spec:
+      containers:
+      - name: frontend
+        image: ECR_REGISTRY/creator-os-frontend:IMAGE_TAG
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NEXT_PUBLIC_API_URL
+          value: "https://api.creator-os.com"
