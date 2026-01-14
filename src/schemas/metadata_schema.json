@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CreatorOS_Metadata",
+  "description": "Standardized output for platform-specific content assets",
+  "type": "object",
+  "properties": {
+    "platform": {
+      "type": "string",
+      "enum": ["tiktok", "instagram", "linkedin", "youtube", "twitter", "facebook"]
+    },
+    "assets": {
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "caption": { "type": "string" },
+        "hooks": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "hashtags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "description": { "type": "string" },
+        "call_to_action": { "type": "string" }
+      },
+      "required": ["caption"]
+    },
+    "ai_metadata": {
+      "type": "object",
+      "properties": {
+        "model_used": { "type": "string" },
+        "prompt_version": { "type": "string" },
+        "estimated_virality_score": { "type": "number" }
+      }
+    }
+  }
+}
