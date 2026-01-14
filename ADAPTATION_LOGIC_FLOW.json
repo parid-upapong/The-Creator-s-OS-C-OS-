@@ -1,0 +1,45 @@
+{
+  "workflow_id": "standard_repurpose_v1",
+  "steps": [
+    {
+      "step": 1,
+      "action": "Ingest",
+      "params": { "source": "Youtube_URL", "detect_scenes": true }
+    },
+    {
+      "step": 2,
+      "action": "Analyze",
+      "engine": "Sentiment_Viral_Predictor",
+      "output": "Timestamp_Markers"
+    },
+    {
+      "step": 3,
+      "action": "Transform",
+      "tasks": [
+        {
+          "platform": "TikTok",
+          "format": "9:16",
+          "audio": "Trending_Overlay_Suggest",
+          "captions": "Dynamic_Large_Text"
+        },
+        {
+          "platform": "LinkedIn",
+          "format": "Text_Post",
+          "style": "Professional_Summary",
+          "include_media": "Thumbnail_Clip"
+        },
+        {
+          "platform": "Instagram",
+          "format": "Reels",
+          "translation": "Localize_Captions_TH_EN"
+        }
+      ]
+    },
+    {
+      "step": 4,
+      "action": "Review_Queue",
+      "interface": "Creator_Dashboard_Mobile",
+      "require_approval": true
+    }
+  ]
+}
