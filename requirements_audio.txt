@@ -1,0 +1,8 @@
+openai
+requests
+noisereduce
+pyloudnorm
+soundfile
+numpy
+pydub
+ffmpeg-python
