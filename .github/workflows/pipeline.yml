@@ -1,0 +1,84 @@
+name: Creator OS CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, staging ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          
+      - name: Install Backend Dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+          pip install pytest
+          
+      - name: Run Backend Tests
+        run: |
+          cd backend
+          pytest
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install Frontend Dependencies
+        run: npm install
+        
+      - name: Run Frontend Lint & Build
+        run: npm run build
+
+  build-and-push:
+    needs: test
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Login to Amazon ECR
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Build and Push Backend Image
+        run: |
+          docker build -t creator-os-backend ./backend
+          docker tag creator-os-backend:latest ${{ secrets.ECR_REGISTRY }}/creator-os-backend:${{ github.sha }}
+          docker push ${{ secrets.ECR_REGISTRY }}/creator-os-backend:${{ github.sha }}
+
+      - name: Build and Push Frontend Image
+        run: |
+          docker build -t creator-os-frontend .
+          docker tag creator-os-frontend:latest ${{ secrets.ECR_REGISTRY }}/creator-os-frontend:${{ github.sha }}
+          docker push ${{ secrets.ECR_REGISTRY }}/creator-os-frontend:${{ github.sha }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update Kubernetes Manifests
+        run: |
+          sed -i 's|IMAGE_TAG|${{ github.sha }}|g' k8s/deployment.yml
+          
+      - name: Deploy to EKS
+        uses: azure/k8s-deploy@v1
+        with:
+          manifests: |
+            k8s/deployment.yml
+            k8s/service.yml
+          images: |
+            ${{ secrets.ECR_REGISTRY }}/creator-os-backend:${{ github.sha }}
+            ${{ secrets.ECR_REGISTRY }}/creator-os-frontend:${{ github.sha }}
