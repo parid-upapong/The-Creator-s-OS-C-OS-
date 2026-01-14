@@ -1,0 +1,20 @@
+graph TD
+    User((Creator)) -->|Uploads/Commands| FrontEnd[Next.js Dashboard]
+    FrontEnd -->|GraphQL/REST| Gateway[API Gateway]
+    Gateway -->|Auth| AuthService[Auth Service]
+    Gateway -->|Trigger Job| Orchestrator[Workflow Orchestrator - Temporal]
+    
+    subgraph "AI Adaptation Pipeline"
+    Orchestrator -->|Task 1| Transcribe[Speech-to-Text Worker]
+    Orchestrator -->|Task 2| Vision[Scene/Face Detection Worker]
+    Orchestrator -->|Task 3| LLM[LLM Context/Captioning Worker]
+    end
+    
+    subgraph "Production & Delivery"
+    Orchestrator -->|Task 4| Rendering[FFmpeg/GPU Render Farm]
+    Rendering -->|Save Asset| S3[(Object Storage)]
+    Orchestrator -->|Task 5| Distro[Social API Distribution]
+    end
+    
+    S3 --> Distro
+    Distro -->|Publish| Platforms{Social Platforms}
